@@ -1,7 +1,7 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
 /* DMR GEDOR BANDUNG updates */
 .popup-detail{padding:12px;border-radius:10px;background:#f8f0df;margin:6px 0 12px;border:1px solid #ddc89c}
-body, button, input, textarea, select { font-family: "Comic Sans MS", "Comic Sans", cursive, sans-serif !important; }
+body, button, input, textarea, select { font-family: "Comic Neue", "Comic Sans MS", "Comic Sans", "Trebuchet MS", sans-serif !important; }
 .stage-backdrop { width:100%; display:block; aspect-ratio: 3.2 / 1; object-fit:cover; object-position:center; border-radius:12px; border:2px solid #d9b77b; margin:8px 0 12px; }
 .upload-card {display:flex; align-items:center; gap:12px; padding:13px; margin:10px 0; border-radius:12px; text-decoration:none; font-weight:700; border:1px solid transparent;}
 .upload-card .upload-icon {width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:10px;font-size:22px;background:rgba(255,255,255,.65);flex-shrink:0}
@@ -27,7 +27,7 @@ button:active,.spot:active,.clickable:active{transform:translateY(2px) scale(.97
 :root{
   --bg:#2e4a2b; --wood:#5a3a1a; --wood-2:#8a5a2b; --wood-dk:#2a1a0c; --cream:#fff1cf; --cream-2:#f3dfae; --ink:#3b2a1a;
   --gold:#e8b93c; --gold-lt:#e8c98a; --red:#d4533f; --leaf:#4f9a3d; --muted:#7a5f3d;
-  --f:'Comic Sans MS','Comic Sans','Trebuchet MS',sans-serif;
+  --f:'Comic Neue','Comic Sans MS','Comic Sans','Trebuchet MS',sans-serif;
   color-scheme:light;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -426,16 +426,23 @@ var layer=$('layer'),labs={};
 /* Efek suara game retro saat objek/menu diklik */
 var sfxContext=null;
 window.gameSfx=gameSfx;
+// Unlock WebAudio on the first direct touch/click on mobile.
+document.addEventListener('pointerdown',function(){try{var AC=window.AudioContext||window.webkitAudioContext;if(AC){sfxContext=sfxContext||new AC();if(sfxContext.state==='suspended')sfxContext.resume();}}catch(e){}},{once:true,passive:true});
 function gameSfx(kind){
   try{
     var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
-    sfxContext=sfxContext||new AC();if(sfxContext.state==='suspended')sfxContext.resume();
-    var now=sfxContext.currentTime;
-    function tone(freq,start,duration,volume,type){var o=sfxContext.createOscillator(),g=sfxContext.createGain();o.type=type||'square';o.frequency.setValueAtTime(freq,now+start);g.gain.setValueAtTime(0.0001,now+start);g.gain.exponentialRampToValueAtTime(volume,now+start+0.008);g.gain.exponentialRampToValueAtTime(0.0001,now+start+duration);o.connect(g);g.connect(sfxContext.destination);o.start(now+start);o.stop(now+start+duration+0.02)}
-    if(kind==='open'){tone(660,0,.07,.055,'square');tone(880,.07,.10,.045,'triangle')}
-    else if(kind==='confirm'){tone(784,0,.07,.05,'triangle');tone(988,.065,.12,.045,'triangle')}
-    else if(kind==='type'){tone(760,0,.028,.028,'square');tone(1040,.006,.022,.012,'triangle')}
-    else {tone(520,0,.045,.035,'square');tone(390,.025,.055,.025,'triangle')}
+    sfxContext=sfxContext||new AC();
+    // Mobile Safari/Chrome may keep WebAudio suspended until resumed from a user gesture.
+    var play=function(){
+      var now=sfxContext.currentTime;
+      function tone(freq,start,duration,volume,type){var o=sfxContext.createOscillator(),g=sfxContext.createGain();o.type=type||'square';o.frequency.setValueAtTime(freq,now+start);g.gain.setValueAtTime(0.0001,now+start);g.gain.exponentialRampToValueAtTime(volume,now+start+0.008);g.gain.exponentialRampToValueAtTime(0.0001,now+start+duration);o.connect(g);g.connect(sfxContext.destination);o.start(now+start);o.stop(now+start+duration+0.02)}
+      if(kind==='open'){tone(660,0,.07,.075,'square');tone(880,.07,.10,.065,'triangle')}
+      else if(kind==='confirm'){tone(784,0,.07,.07,'triangle');tone(988,.065,.12,.06,'triangle')}
+      else if(kind==='type'){tone(760,0,.028,.065,'square');tone(1040,.006,.022,.03,'triangle')}
+      else {tone(520,0,.045,.06,'square');tone(390,.025,.055,.045,'triangle')}
+    };
+    if(sfxContext.state==='suspended') { var r=sfxContext.resume(); if(r&&r.then)r.then(play).catch(function(){}); else play(); }
+    else play();
   }catch(e){}
 }
 
@@ -559,10 +566,10 @@ window.__desa={open:open,goTo:goTo};
 
 <!-- Musik latar instrumental bernuansa angklung, dibuat secara sintetis agar file tetap mandiri -->
 <style>
-#musicToggle{position:fixed;right:12px;top:12px;z-index:9999;border:2px solid #d9b77b;border-radius:999px;background:#fff1cf;color:#3b2a1a;padding:9px 13px;font:700 13px "Comic Sans MS","Comic Sans",sans-serif;box-shadow:0 3px 0 #8a5a2b;cursor:pointer}
+#musicToggle{position:fixed;right:12px;top:12px;z-index:9999;border:2px solid #d9b77b;border-radius:999px;background:#fff1cf;color:#3b2a1a;padding:9px 13px;font:700 13px "Comic Neue","Comic Sans MS","Comic Sans","Trebuchet MS",sans-serif;box-shadow:0 3px 0 #8a5a2b;cursor:pointer}
 #musicToggle[aria-pressed="true"]{background:#dff0d8;border-color:#7eae68}
 </style>
-<button id="musicToggle" type="button" aria-pressed="false" title="Nyalakan atau matikan musik latar">🎵 Musik: OFF</button>
+<button id="musicToggle" type="button" aria-pressed="false" title="Nyalakan atau matikan musik latar; ketuk halaman sekali untuk mengaktifkan audio di HP">🎵 Musik: OFF</button>
 <script>
 (function(){
  const btn=document.getElementById('musicToggle'); let ac=null, timer=null, step=0, active=false;
